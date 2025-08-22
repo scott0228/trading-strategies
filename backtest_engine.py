@@ -1,4 +1,4 @@
-"""Backtesting engine for trading strategies."""
+"""交易策略回測引擎。"""
 
 import pandas as pd
 import numpy as np
@@ -7,7 +7,7 @@ from strategies.base_strategy import BaseStrategy
 
 
 class BacktestEngine:
-    """Simple backtesting engine for trading strategies."""
+    """簡單的交易策略回測引擎。"""
     
     def __init__(self, initial_capital: float = 100000, commission: float = 0.001):
         self.initial_capital = initial_capital
@@ -16,12 +16,12 @@ class BacktestEngine:
     
     def run_backtest(self, strategy: BaseStrategy, data: pd.DataFrame, 
                     symbol: str = "STOCK") -> Dict[str, Any]:
-        """Run backtest for a given strategy."""
+        """為給定策略執行回測。"""
         
-        # Generate signals
+        # 產生訊號
         signals_data = strategy.generate_signals(data)
         
-        # Reset strategy state
+        # 重設策略狀態
         strategy.capital = strategy.initial_capital
         strategy.positions = {}
         strategy.trades = []
@@ -32,7 +32,7 @@ class BacktestEngine:
         for i, (timestamp, row) in enumerate(signals_data.iterrows()):
             current_price = row['Close']
             
-            # Skip if we don't have enough data for indicators
+            # 如果沒有足夠的數據用於指標，則跳過
             if pd.isna(current_price) or pd.isna(row.get('position', 0)):
                 strategy.portfolio_value.append(
                     strategy.get_portfolio_value({symbol: current_price})
@@ -41,35 +41,39 @@ class BacktestEngine:
             
             position_change = row.get('position', 0)
             
-            # Execute trades based on position changes
+            # 根據部位變化執行交易
             if position_change != 0:
-                # Calculate position size (simple: 10% of capital per trade)
-                position_size_pct = 0.1
-                trade_value = strategy.capital * position_size_pct
-                shares = int(trade_value / current_price) if current_price > 0 else 0
+                # 計算部位大小
+                if 'position_size' in row and not pd.isna(row['position_size']):
+                    shares = int(row['position_size'])
+                else:
+                    # 如果策略未指定，則使用預設部位大小
+                    position_size_pct = 0.1
+                    trade_value = self.initial_capital * position_size_pct
+                    shares = int(trade_value / current_price) if current_price > 0 else 0
                 
-                if position_change > 0 and current_position <= 0:  # Buy signal
+                if position_change > 0 and current_position <= 0:  # 買進訊號
                     if shares > 0:
                         cost = shares * current_price * (1 + self.commission)
                         if cost <= strategy.capital:
                             strategy.execute_trade(symbol, shares, current_price, timestamp)
                             current_position = shares
                 
-                elif position_change < 0 and current_position > 0:  # Sell signal
+                elif position_change < 0 and current_position > 0:  # 賣出訊號
                     if current_position > 0:
                         revenue = current_position * current_price * (1 - self.commission)
                         strategy.execute_trade(symbol, -current_position, current_price, timestamp)
                         strategy.capital += revenue
                         current_position = 0
             
-            # Record portfolio value
+            # 記錄投資組合價值
             portfolio_val = strategy.get_portfolio_value({symbol: current_price})
             strategy.portfolio_value.append(portfolio_val)
         
-        # Calculate final performance metrics
+        # 計算最終績效指標
         performance = strategy.get_performance_metrics()
         
-        # Add additional backtest-specific metrics
+        # 新增額外的回測特定指標
         if strategy.portfolio_value:
             portfolio_series = pd.Series(strategy.portfolio_value)
             performance['final_capital'] = portfolio_series.iloc[-1]
@@ -86,20 +90,20 @@ class BacktestEngine:
     
     def run_multiple_backtests(self, strategies: List[BaseStrategy], 
                              data_dict: Dict[str, pd.DataFrame]) -> Dict[str, Dict[str, Any]]:
-        """Run backtests for multiple strategies and symbols."""
+        """為多個策略和商品執行回測。"""
         all_results = {}
         
         for symbol, data in data_dict.items():
             symbol_results = {}
             
             for strategy in strategies:
-                print(f"Running backtest: {strategy.name} on {symbol}")
+                print(f"執行回測： {strategy.name} on {symbol}")
                 
                 try:
                     result = self.run_backtest(strategy, data, symbol)
                     symbol_results[strategy.name] = result
                 except Exception as e:
-                    print(f"Error running {strategy.name} on {symbol}: {e}")
+                    print(f"執行 {strategy.name} on {symbol} 時發生錯誤： {e}")
                     symbol_results[strategy.name] = {
                         'performance': {},
                         'trades': [],
@@ -112,7 +116,7 @@ class BacktestEngine:
         return all_results
     
     def get_summary_results(self) -> pd.DataFrame:
-        """Get summary of all backtest results."""
+        """獲取所有回測結果的摘要。"""
         if not self.results:
             return pd.DataFrame()
         
