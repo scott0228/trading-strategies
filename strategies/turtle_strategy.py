@@ -44,18 +44,27 @@ class TurtleStrategy(BaseStrategy):
         df = self.calculate_indicators(data)
         
         df['signal'] = 0
-        
-        # 買進訊號：價格突破20日高點
-        df.loc[df['Close'] > df['entry_high'], 'signal'] = 1
-        
-        # 賣出訊號：價格跌破10日低點
-        df.loc[df['Close'] < df['exit_low'], 'signal'] = -1
-        
-        # 根據 ATR 加入停損
-        # 這是一個簡化的實作。完整的實作會為每個部位追蹤停損水準。
-        if 'atr' in df.columns:
-            df['stop_loss'] = df['Close'] - self.stop_loss_multiplier * df['atr']
-            df.loc[df['Close'] < df['stop_loss'].shift(1), 'signal'] = -1
+        position = 0
+        stop_loss_price = 0
+
+        for i, row in df.iterrows():
+            # 買進訊號：價格突破20日高點
+            if position <= 0 and row['Close'] > row['entry_high']:
+                df.loc[i, 'signal'] = 1
+                position = 1
+                stop_loss_price = row['Close'] - self.stop_loss_multiplier * row['atr']
+            
+            # 賣出訊號：價格跌破10日低點
+            elif position > 0 and row['Close'] < row['exit_low']:
+                df.loc[i, 'signal'] = -1
+                position = 0
+                stop_loss_price = 0
+
+            # 停損訊號
+            elif position > 0 and row['Low'] < stop_loss_price:
+                df.loc[i, 'signal'] = -1
+                position = 0
+                stop_loss_price = 0
 
         df['position'] = df['signal'].diff()
         
