@@ -44,28 +44,33 @@ class TurtleStrategy(BaseStrategy):
         df = self.calculate_indicators(data)
         
         df['signal'] = 0
+        df['position'] = 0  # 直接使用 signal 作為 position
+        
         position = 0
         stop_loss_price = 0
 
-        for i, row in df.iterrows():
-            # 買進訊號：價格突破20日高點
-            if position <= 0 and row['Close'] > row['entry_high']:
-                df.loc[i, 'signal'] = 1
+        for i in range(len(df)):
+            row = df.iloc[i]
+            
+            # 跳過沒有足夠歷史數據的前期
+            if pd.isna(row['entry_high']) or pd.isna(row['exit_low']) or pd.isna(row['atr']):
+                continue
+                
+            # 買進訊號：價格突破20日高點（使用前一日的通道值）
+            if position <= 0 and row['Close'] > row['entry_high'] and not pd.isna(row['entry_high']):
+                df.iloc[i, df.columns.get_loc('signal')] = 1
+                df.iloc[i, df.columns.get_loc('position')] = 1
                 position = 1
                 stop_loss_price = row['Close'] - self.stop_loss_multiplier * row['atr']
             
-            # 賣出訊號：價格跌破10日低點
-            elif position > 0 and row['Close'] < row['exit_low']:
-                df.loc[i, 'signal'] = -1
+            # 賣出訊號：價格跌破10日低點或觸及停損
+            elif position > 0 and (
+                (row['Close'] < row['exit_low'] and not pd.isna(row['exit_low'])) or
+                row['Low'] < stop_loss_price
+            ):
+                df.iloc[i, df.columns.get_loc('signal')] = -1
+                df.iloc[i, df.columns.get_loc('position')] = -1
                 position = 0
                 stop_loss_price = 0
-
-            # 停損訊號
-            elif position > 0 and row['Low'] < stop_loss_price:
-                df.loc[i, 'signal'] = -1
-                position = 0
-                stop_loss_price = 0
-
-        df['position'] = df['signal'].diff()
-        
+                
         return df
