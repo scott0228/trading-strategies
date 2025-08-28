@@ -46,13 +46,28 @@ trading-strategies/
 ├── notebooks/               # Jupyter筆記本
 │   └── quick_start_example.ipynb
 ├── data/                    # 資料存儲目錄
-├── tests/                   # 測試文件
+├── test/                    # 測試程式目錄
+│   ├── run_all_tests.py    # 執行所有測試
+│   ├── test_notebook_imports.py  # Notebook測試
+│   ├── test_all_strategies.py    # 策略功能測試
+│   ├── test_tw_stocks.py         # 台股測試
+│   └── quick_tw_test.py          # 快速台股測試
 ├── utils.py                # 工具函數
 ├── backtest_engine.py      # 回測引擎
 └── README.md
 ```
 
 ## 快速開始
+
+### 測試系統
+```bash
+# 測試系統是否正常運作
+cd test
+python run_all_tests.py
+
+# 快速測試台股
+python quick_tw_test.py
+```
 
 ### 1. 基本使用範例
 

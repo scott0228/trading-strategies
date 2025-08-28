@@ -3,6 +3,15 @@
 快速台股海龜策略測試程式
 """
 
+import sys
+import os
+
+# 處理路徑問題
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 from tw_stock_utils import fetch_tw_stock_data, print_tw_summary
 from strategies.turtle_strategy import TurtleStrategy
 from backtest_engine import BacktestEngine
