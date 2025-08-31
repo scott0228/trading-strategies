@@ -120,3 +120,4 @@ if current_high > entry_upper:  # proper breakout detection
 3. Add configuration to `config/config.py`
 4. Use `utils.py` functions for data fetching and visualization
 5. Run backtests via BacktestEngine
+6. 回測試程放在 test/ 下，要比較 buy-and-hold 的績效
