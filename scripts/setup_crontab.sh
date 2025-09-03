@@ -5,12 +5,12 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 MONITOR_SCRIPT="$PROJECT_ROOT/scripts/daily_signal_monitor.py"
-PYTHON_PATH="$(which python3)"
+UV_PATH="$(which uv)"
 
 echo "=== 海龜策略監控 Crontab 設定 ==="
 echo "專案路径: $PROJECT_ROOT"
 echo "監控腳本: $MONITOR_SCRIPT"
-echo "Python 路径: $PYTHON_PATH"
+echo "UV 路径: $UV_PATH"
 echo
 
 # 檢查腳本是否存在
@@ -19,18 +19,18 @@ if [ ! -f "$MONITOR_SCRIPT" ]; then
     exit 1
 fi
 
-# 檢查 Python 是否存在
-if [ ! -f "$PYTHON_PATH" ]; then
-    echo "❌ 錯誤: 找不到 Python3"
+# 檢查 UV 是否存在
+if [ ! -f "$UV_PATH" ]; then
+    echo "❌ 錯誤: 找不到 uv，請確保已安裝 uv"
     exit 1
 fi
 
 # 生成 crontab 條目
 CRON_ENTRY="# 海龜策略每日訊號檢查 - 每個交易日 09:30 (台股開盤後)
-30 9 * * 1-5 cd $PROJECT_ROOT && $PYTHON_PATH $MONITOR_SCRIPT >> $PROJECT_ROOT/logs/daily_monitor.log 2>&1
+30 9 * * 1-5 cd $PROJECT_ROOT && $UV_PATH run $MONITOR_SCRIPT >> $PROJECT_ROOT/logs/daily_monitor.log 2>&1
 
 # 美股盤後檢查 - 每個交易日 05:30 (台北時間, 美股收盤後)
-30 5 * * 2-6 cd $PROJECT_ROOT && $PYTHON_PATH $MONITOR_SCRIPT >> $PROJECT_ROOT/logs/daily_monitor.log 2>&1"
+30 5 * * 2-6 cd $PROJECT_ROOT && $UV_PATH run $MONITOR_SCRIPT >> $PROJECT_ROOT/logs/daily_monitor.log 2>&1"
 
 # 創建 logs 目錄
 mkdir -p "$PROJECT_ROOT/logs"
@@ -74,4 +74,4 @@ fi
 
 echo
 echo "=== 手動測試指令 ==="
-echo "cd $PROJECT_ROOT && python3 scripts/daily_signal_monitor.py"
+echo "cd $PROJECT_ROOT && uv run scripts/daily_signal_monitor.py"
