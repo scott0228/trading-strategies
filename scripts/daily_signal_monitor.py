@@ -4,10 +4,10 @@
 用於檢查 CRWD 和 QQQ 的交易訊號並發送 Telegram 通知
 """
 
-import sys
-import os
-from datetime import datetime
 import json
+import os
+import sys
+from datetime import datetime
 
 # Add project root to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -31,7 +31,7 @@ def main():
     print(f"=== 海龜策略每日訊號檢查 - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===")
     
     # 設定要監控的股票
-    symbols = ['CRWD', 'QQQ']
+    symbols = ['CRWD', 'QQQ', 'ARKK', 'ARKW', 'AAPL', 'MSFT', 'GOOGL']
     
     # 初始化訊號檢查器
     checker = TurtleSignalChecker()

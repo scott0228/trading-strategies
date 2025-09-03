@@ -1,14 +1,15 @@
-import pandas as pd
+import os
+import sys
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-import sys
-import os
+
+import pandas as pd
 
 # Add project root to path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import fetch_data
 from strategies.turtle_strategy import TurtleStrategy
+from utils import fetch_data
 
 
 class TurtleSignalChecker:
@@ -41,7 +42,7 @@ class TurtleSignalChecker:
                 return {
                     'symbol': symbol,
                     'has_signal': False,
-                    'current_price': float(data.iloc[-1]['close']),
+                    'current_price': float(data.iloc[-1]['Close']),
                     'last_check': datetime.now().isoformat()
                 }
             
@@ -60,8 +61,8 @@ class TurtleSignalChecker:
                 'has_signal': is_recent_signal,
                 'signal_type': signal_type,
                 'signal_date': signal_date.strftime('%Y-%m-%d'),
-                'price': float(latest_signal['close']),
-                'current_price': float(data.iloc[-1]['close']),
+                'price': float(latest_signal['Close']),
+                'current_price': float(data.iloc[-1]['Close']),
                 'entry_upper': float(latest_signal.get('Entry_Upper', 0)),
                 'entry_lower': float(latest_signal.get('Entry_Lower', 0)),
                 'last_check': datetime.now().isoformat()
