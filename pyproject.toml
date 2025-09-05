@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "backtrader>=1.9.78.123",
+    "fubon-neo",
     "ipykernel>=6.30.1",
     "jupyter>=1.1.1",
     "lxml>=6.0.1",
@@ -18,3 +19,6 @@ dependencies = [
     "twstock>=1.4.0",
     "yfinance>=0.2.65",
 ]
+
+[tool.uv.sources]
+fubon-neo = { path = "fubon_neo-2.2.4-cp37-abi3-macosx_11_0_arm64.whl" }
