@@ -56,14 +56,41 @@ class BacktestEngine:
                     if shares > 0:
                         cost = shares * current_price * (1 + self.commission)
                         if cost <= strategy.capital:
-                            strategy.execute_trade(symbol, shares, current_price, timestamp)
+                            # 先扣除现金（包含手续费）
+                            strategy.capital -= cost
+                            # 记录交易（不包含手续费，因为已经在上面扣除）
+                            trade_record = {
+                                'timestamp': timestamp,
+                                'symbol': symbol,
+                                'quantity': shares,
+                                'price': current_price,
+                                'value': shares * current_price,
+                                'capital_after': strategy.capital
+                            }
+                            strategy.trades.append(trade_record)
+                            # 更新持仓
+                            if symbol not in strategy.positions:
+                                strategy.positions[symbol] = 0
+                            strategy.positions[symbol] += shares
                             current_position = shares
                 
                 elif position_change < 0 and current_position > 0:  # 賣出訊號
                     if current_position > 0:
                         revenue = current_position * current_price * (1 - self.commission)
-                        strategy.execute_trade(symbol, -current_position, current_price, timestamp)
+                        # 增加现金（扣除手续费）
                         strategy.capital += revenue
+                        # 记录交易
+                        trade_record = {
+                            'timestamp': timestamp,
+                            'symbol': symbol,
+                            'quantity': -current_position,
+                            'price': current_price,
+                            'value': -(current_position * current_price),
+                            'capital_after': strategy.capital
+                        }
+                        strategy.trades.append(trade_record)
+                        # 更新持仓
+                        strategy.positions[symbol] = 0
                         current_position = 0
             
             # 記錄投資組合價值
